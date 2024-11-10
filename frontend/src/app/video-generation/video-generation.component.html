@@ -1,0 +1,39 @@
+<div class="container">
+    <h1>Story Generator</h1>
+    <!-- Updated input container with a textarea for multiple sentences -->
+    <div class="input-container">
+      <textarea id="storyTopic" [(ngModel)]="storyTopic" placeholder="Enter a topic or sentences for your story" 
+        rows="3" class="input-field">
+      </textarea>
+    </div>
+    <!-- Dropdown to select language with a hint -->
+    <div class="input-container">
+      <select [(ngModel)]="selectedLanguage" class="select-field">
+        <option value="" disabled selected>Select a language...</option>
+        <option value="English">English</option>
+        <option value="Spanish">Spanish</option>
+        <option value="French">French</option>
+        <option value="German">German</option>
+      </select>
+    </div>
+    <button (click)="mainFunction()">Generate Story</button>
+    <!-- Progress bar -->
+    <div class="progress-container" *ngIf="isLoading">
+      <div class="progress-bar" [style.width.%]="progress"></div>
+    </div>
+    <!-- Progress message display -->
+      <p *ngIf="progressMessage" class="progress-message">{{ progressMessage }}</p>
+      <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
+      <!-- Display the video if the URL is available -->
+    <div class="video-container" *ngIf="video_url">
+      <h2>Generated Video</h2>
+      <video [src]="video_url" controls autoplay width="600" height="400">
+        Your browser does not support the video tag.
+      </video>
+    </div>
+
+    <!-- Display the generated story text if the video is not available -->
+    <p *ngIf="generatedStory && !video_url">{{ generatedStory }}</p>
+    </div>
+
+

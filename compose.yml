@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  angularapp:
+    container_name: angularapp
+    image: angularapp:1.0.0
+    build:
+      context: ./frontend
+      dockerfile: angular.dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - flaskapp
+
+  flaskapp:
+    container_name: flaskapp
+    image: flaskapp:1.0.0
+    build:
+      context: ./backend
+      dockerfile: flask.dockerfile
+    env_file:
+      - ./backend/.env  # Updated path to .env file
+    ports:
+      - "4000:4000"
+    depends_on:
+      - celery_worker
+
+  celery_worker:
+    container_name: celery_worker
+    image: flaskapp:1.0.0
+    build:
+      context: ./backend
+      dockerfile: flask.dockerfile
+    env_file:
+      - ./backend/.env  # Updated path to .env file
+    command: celery -A app.celery worker --loglevel=info

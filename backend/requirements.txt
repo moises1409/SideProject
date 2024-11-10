@@ -1,0 +1,12 @@
+flask
+flask_cors
+openai
+python-dotenv
+pydantic
+replicate
+requests
+azure-storage-blob
+moviepy==1.0.3
+Pillow==9.5.0
+celery
+redis
