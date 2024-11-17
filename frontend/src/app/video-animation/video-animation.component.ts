@@ -15,14 +15,14 @@ interface StoryResponse {
 }
 
 @Component({
-  selector: 'app-video-generation',
+  selector: 'app-video-animation',
   standalone: true,
   imports: [CommonModule, FormsModule, HttpClientModule],
-  templateUrl: './video-generation.component.html',
-  styleUrl: './video-generation.component.css'
+  templateUrl: './video-animation.component.html',
+  styleUrl: './video-animation.component.css'
 })
 
-export class VideoGenerationComponent {
+export class VideoAnimationComponent {
   storyTopic: string = '';
   generatedStory: string = '';
   errorMessage: string = '';

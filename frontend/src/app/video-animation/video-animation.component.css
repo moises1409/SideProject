@@ -1,0 +1,97 @@
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: left;
+    font-family: Arial, sans-serif;
+  }
+  
+  .input-container {
+    margin: 10px 0;
+  }
+  
+  .input-field {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    box-sizing: border-box;
+    resize: vertical; /* Allow resizing of textarea */
+  }
+  
+  textarea.input-field {
+    height: auto; /* Allow the textarea to grow */
+  }
+  
+  .select-field {
+    width: 60%; /* Set the width of the select smaller than textarea */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    color: #999;
+    cursor: pointer;
+    appearance: none; /* Remove default styling in some browsers */
+    box-sizing: border-box;
+  }
+  
+  select.input-field {
+    color: #999; /* Text color */
+    cursor: pointer;
+    appearance: none; /* Remove default styling in some browsers */
+  }
+  
+  select.input-field option[disabled] {
+    color: #999; /* Lighter color for the hint */
+  }
+  
+  button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 4px;
+    background-color: #28a745;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  button:hover {
+    background-color: #218838;
+  }
+  
+  .error {
+    color: red;
+    font-size: 14px;
+    margin-top: 10px;
+  }
+  
+  .progress-container {
+    margin: 20px 0;
+    width: 100%;
+    background-color: #f3f3f3;
+    border-radius: 4px;
+    overflow: hidden;
+    height: 20px;
+    position: relative;
+  }
+  
+  .progress-bar {
+    height: 100%;
+    background-color: #4caf50;
+    transition: width 0.5s ease-in-out;
+  }
+  
+  .progress-message {
+    font-size: 14px;
+    color: #fffcfc; /* Ensure this color contrasts with the background */
+    margin-top: 5px;
+    text-align: center; /* Center the text */
+    visibility: visible; /* Ensure it's visible */
+    display: block; /* Ensure it's displayed as a block element */
+  }
+  
+  
+  
+    
