@@ -122,6 +122,7 @@ def create_video_with_scenes(scenes, output_path, music):
 
 
 def search_for_stock_videos(query: str, limit: int, min_dur: int):
+    logger.debug("search for stock videos...")
     headers = {
         "Authorization": os.getenv("PEXELS_API_KEY"),
     }
@@ -130,6 +131,9 @@ def search_for_stock_videos(query: str, limit: int, min_dur: int):
 
     r = requests.get(qurl, headers=headers)
     response = r.json()
+
+    
+    logger.debug(f"response from Pexel API: {response}")
 
     raw_urls = []
     target_width = 640
@@ -141,10 +145,12 @@ def search_for_stock_videos(query: str, limit: int, min_dur: int):
         for i in range(limit):
             if response["videos"][i]["duration"] >= min_dur:
                 raw_urls = response["videos"][i]["video_files"]
+                logger.debug(f"video founded from Pexel: {raw_urls}")
                 for video in raw_urls:
                     if ".com/video-files" in video["link"]:
                         if video["width"] == target_width and video["height"] == target_height and video["quality"] == target_quality:
                             video_url = video["link"]
+                            logger.debug(f"video from Pexel: {video_url}")
                             return  video_url
         if video_url == "":
                 logger.debug("no ha encontrado el video con los criterios y saca el primero de la busqueda")

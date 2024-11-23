@@ -8,7 +8,7 @@ from fonctions import *
 import traceback
 from fonctions import set_task_status, upload_to_blob_storage, create_video_with_scenes, search_for_stock_videos, download_video, logger
 from moviepy.editor import *
-from prompts.motivation import PROMPT_SYSTEM_MOTIVATION, PROMPT_USER1, PROMPT_USER2, MOTIVATION_VOICE_ID_ES, MOTIVATION_VOICE_ID_EN, CHUNK_SIZE
+from prompts.motivation import PROMPT_SYSTEM_MOTIVATION, PROMPT_USER1, PROMPT_USER2, MOTIVATION_VOICE_ID_ES, MOTIVATION_VOICE_ID_EN, MOTIVATION_VOICE_ID_FR, CHUNK_SIZE
 
 video_motivation = Blueprint('video_motivation', __name__)
 
@@ -164,11 +164,11 @@ def generate_audio_scene(text, language):
     if language == "Spanish":
         url = f"https://api.elevenlabs.io/v1/text-to-speech/{MOTIVATION_VOICE_ID_ES}"
     if language == "French":
-        url = f"https://api.elevenlabs.io/v1/text-to-speech/{MOTIVATION_VOICE_ID_ES}"
+        url = f"https://api.elevenlabs.io/v1/text-to-speech/{MOTIVATION_VOICE_ID_FR}"
     if language == "English":
         url = f"https://api.elevenlabs.io/v1/text-to-speech/{MOTIVATION_VOICE_ID_EN}"
     else:
-        url = f"https://api.elevenlabs.io/v1/text-to-speech/{MOTIVATION_VOICE_ID_ES}"  
+        url = f"https://api.elevenlabs.io/v1/text-to-speech/{MOTIVATION_VOICE_ID_EN}"  
     
     headers = {
         "Accept": "audio/mpeg",
