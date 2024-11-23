@@ -145,7 +145,7 @@ def search_for_stock_videos(query: str, limit: int, min_dur: int):
         for i in range(limit):
             if response["videos"][i]["duration"] >= min_dur:
                 raw_urls = response["videos"][i]["video_files"]
-                logger.debug(f"video founded from Pexel: {raw_urls}")
+                logger.debug(f"video {i} founded from Pexel: {raw_urls}")
                 for video in raw_urls:
                     if ".com/video-files" in video["link"]:
                         if video["width"] == target_width and video["height"] == target_height and video["quality"] == target_quality:
