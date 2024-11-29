@@ -6,23 +6,23 @@ import { HttpClientModule } from '@angular/common/http';
 import { of, Observable, forkJoin, interval, throwError } from 'rxjs';
 import { catchError, map, switchMap, takeWhile } from 'rxjs/operators';
 
-interface StoryResponse {
+interface ScriptResponse {
   complete_story: string;
+  webinfo: string;
   scenes: Array<{
-    image_prompt: string;
+    video_prompt: string;
     sentences: string;
   }>;
 }
 
 @Component({
-  selector: 'app-video-generation',
+  selector: 'app-video-commercial',
   standalone: true,
   imports: [CommonModule, FormsModule, HttpClientModule],
-  templateUrl: './video-generation.component.html',
-  styleUrl: './video-generation.component.css'
+  templateUrl: './video-commercial.component.html',
+  styleUrl: './video-commercial.component.css'
 })
-
-export class VideoGenerationComponent {
+export class VideoCommercialComponent {
   storyTopic: string = '';
   generatedStory: string = '';
   errorMessage: string = '';
@@ -48,28 +48,25 @@ export class VideoGenerationComponent {
     return window.location.hostname !== 'localhost';
   }
 
-  // Function to call after the video has been successfully generated
-  private handleAfterVideoGeneration(): void {
-    const audioUrls = this.generatedResults.map(([image, audio]) => audio); // Extract audio URLs from generatedResults
-    this.deleteAudioFiles(audioUrls);
-  }
   // Main function with error handling
   mainFunction(): void {
     this.startLoading();
-    this.updateProgress('Generating story...');
+    this.updateProgress('Generating commercial script...');
     this.generateStory()
       .pipe(
         catchError((error) => {
-          this.handleError('Failed to generate the story. Please try again later.', error);
+          this.handleError('Failed to generate the commercial script. Please try again later.', error);
           return throwError(() => error); // Stop further execution
         })
       )
       .subscribe({
         next: (response) => {
           if (response) {
-            console.log('The Story has been generated:', response.complete_story);
+            console.log('The commercial story has been generated:', response.complete_story);
             this.incrementProgress(25);
-            this.handleSceneGeneration(response.scenes);
+            this.generatedResults = response.scenes.map(scene => [scene.video_prompt, scene.sentences]);
+            console.log('Generated Results:', this.generatedResults);
+            this.generateVideo();
           } else {
             this.finishLoading();
           }
@@ -78,46 +75,11 @@ export class VideoGenerationComponent {
       });
   }
 
-  // Function to handle scene generation with error handling
-  private handleSceneGeneration(scenes: Array<{ image_prompt: string; sentences: string }>) {
-    const sceneRequests = scenes.map((scene, index) => {
-      this.updateProgress(`Generating image and audio ...`);
-      return forkJoin({
-        image: this.generateImage(scene.image_prompt),
-        //audio: this.generateAudio(scene.sentences),
-      }).pipe(
-        catchError((error) => {
-          this.handleError('Error generating image and audio. Please try again later.', error);
-          return throwError(() => error);
-        }),
-        map((result) => [result.image, scene.sentences] as [string, string])
-      );
-    });
-
-    forkJoin(sceneRequests)
-      .pipe(
-        catchError((error) => {
-          this.handleError('Error generating scenes. Please try again later.', error);
-          return throwError(() => error);
-        })
-      )
-      .subscribe({
-        next: (results) => {
-          this.generatedResults = results.filter(
-            (result) => result[0] !== undefined && result[1] !== undefined
-          ) as [string, string][];
-          console.log('Generated Results:', this.generatedResults);
-          this.incrementProgress(25);
-          this.generateVideo();
-        },
-        error: () => this.finishLoading(),
-      });
-  } 
 
   // Function to generate the video and handle errors
   private generateVideo() {
     this.updateProgress('Generating video...');
-    const apiUrl = this.getApiUrl('/animated_story/video_animated_editor');
+    const apiUrl = this.getApiUrl('/video_commercial/commercial_video_editor');
     const body = { scene_data: this.generatedResults };
 
     this.http.post<{ task_id: string }>(apiUrl, body).subscribe({
@@ -179,66 +141,23 @@ export class VideoGenerationComponent {
     this.finishLoading();
   }
 
-  private generateStory(): Observable<StoryResponse | undefined> {
+  private generateStory(): Observable<ScriptResponse | undefined> {
     if (!this.storyTopic.trim()) {
-      this.handleError('Please enter a topic for your story.', new Error('No topic provided'));
+      this.handleError('Please enter a topic for your commercial video.', new Error('No topic provided'));
       return of(undefined);
     }
 
-    const apiUrl = this.getApiUrl('/animated_story/get_story');
+    const apiUrl = this.getApiUrl('/video_commercial/get_commercial');
     const params = new HttpParams()
-      .set('topic', this.storyTopic)
+      .set('url', this.storyTopic)
       .set('language', this.selectedLanguage);
 
-    return this.http.get<StoryResponse>(apiUrl, { params }).pipe(
+    return this.http.get<ScriptResponse>(apiUrl, { params }).pipe(
       catchError((error) => {
-        this.handleError('Failed to fetch the story. Please try again.', error);
+        this.handleError('Failed to fetch the commercial script. Please try again.', error);
         return of(undefined);
       })
     );
-  }
-
-  generateImage(parameter: string): Observable<string | undefined> {
-    const apiUrl = this.getApiUrl('/generic_apis/get_image');
-    const params = new HttpParams().set('prompt', parameter);
-
-    return this.http.get(apiUrl, { params, responseType: 'text' }).pipe(
-      catchError((error) => {
-        this.handleError('Error fetching image URL.', error);
-        return of(undefined);
-      })
-    );
-  }
-
-  generateAudio(parameter: string): Observable<string | undefined> {
-    const apiUrl = this.getApiUrl('/generic_apis/get_audio');
-    const params = new HttpParams()
-      .set('text', parameter)
-      .set('language', this.selectedLanguage);
-
-    return this.http.get(apiUrl, { params, responseType: 'text' }).pipe(
-      catchError((error) => {
-        this.handleError('Error fetching audio URL.', error);
-        return of(undefined);
-      })
-    );
-  }
-
-  // Function to call the Python API to delete audio files
-  private deleteAudioFiles(audioUrls: string[]): void {
-    const apiUrl = this.getApiUrl('/generic_apis/delete_audio_files'); // Ensure this matches your backend URL
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    const body = { audio_urls: audioUrls };
-
-    this.http.post(apiUrl, body, { headers }).subscribe({
-      next: (response) => {
-        console.log('Audio files deleted successfully:', response);
-      },
-      error: (error) => {
-        console.error('Error deleting audio files:', error);
-        this.errorMessage = 'Failed to delete audio files.';
-      },
-    });
   }
 
   private startLoading(): void {

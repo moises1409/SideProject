@@ -1,7 +1,9 @@
 from flask import Blueprint, request, jsonify
-import uuid
+from prompts.commercial import *
 from openai import OpenAI
 from pydantic import BaseModel
+import os
+import requests
 from typing import List
 from celery_app import celery
 import requests
@@ -9,15 +11,19 @@ import logging
 import traceback
 from fonctions import set_task_status, upload_to_blob_storage, create_video_with_scenes, search_for_stock_videos, download_video, logger
 from moviepy.editor import *
-from prompts.motivation import PROMPT_SYSTEM_MOTIVATION, PROMPT_USER1, PROMPT_USER2, MOTIVATION_VOICE_ID_ES, MOTIVATION_VOICE_ID_EN, MOTIVATION_VOICE_ID_FR, CHUNK_SIZE
+import uuid
 
-video_motivation = Blueprint('video_motivation', __name__)
+video_commercial = Blueprint('video_commercial', __name__)
 
 api_key = os.getenv('OPENAI_API_KEY')
 eleven_labs_api_key = os.getenv("ELEVENLABS_API_KEY")
-pexels_api_key=os.getenv("PEXELS_API_KEY")
+replicate_api_token = os.getenv("REPLICATE_API_TOKEN")
 
 client = OpenAI(api_key=api_key)
+
+class Webinfo(BaseModel):
+   webinfo: str
+   logo:str
 
 class Scene(BaseModel):
    sentences: str
@@ -26,22 +32,26 @@ class Scene(BaseModel):
 class Story(BaseModel):
     scenes: List[Scene]
     complete_story: str
+    webinfo: str
 
 
-@video_motivation.route('/get_motivational', methods=['GET'])
+@video_commercial.route('/get_commercial', methods=['GET'])
 def generate_story():
-    topic = request.args.get('topic')
+    #topic = request.args.get('topic')
+    url = request.args.get('url')
     language = request.args.get('language')
     
-    if topic and language:
+    if url and language:
         try:
             completion = client.beta.chat.completions.parse(
             #model="gpt-4o-2024-08-06",
             model = "gpt-4o-mini",
             
             messages=[
-                {"role": "system", "content": PROMPT_SYSTEM_MOTIVATION},
-                {"role": "user", "content": PROMPT_USER1 + topic},
+                {"role": "system", "content": PROMPT_SYSTEM_WEBINFO},
+                {"role": "user", "content": PROMPT_URL + url},
+                {"role": "system", "content": PROMPT_SYSTEM_COMMERCIAL},
+                #{"role": "user", "content": PROMPT_USER1 + topic},
                 {"role": "user", "content": PROMPT_USER2 +language}
             ],
             response_format=Story,
@@ -50,36 +60,37 @@ def generate_story():
             response_dict = response.model_dump()
             return jsonify(response_dict)
         except Exception as e:
-            print(f"Failed to generate motivational script: {e}")
+            print(f"Failed to generate commercial script: {e}")
             return None
     else:
         return jsonify({'error': 'No topic provided'}), 400
 
-@video_motivation.route('/motivation_video_editor', methods=['POST'])
+
+@video_commercial.route('/commercial_video_editor', methods=['POST'])
 def motivation_video_editor():
     scene_data = request.json.get('scene_data')
-    logging.debug("motivation_video_editor...")
+    logging.debug("commercial_video_editor...")
     if not scene_data:
         return jsonify({"error": "No scene data provided"}), 400
     
     task_id = str(uuid.uuid4())
 
     # Start the video generation process as a Celery task
-    generate_motivation_video_in_background_celery.apply_async(args=[task_id, scene_data])
+    generate_commercial_video_in_background_celery.apply_async(args=[task_id, scene_data])
 
     return jsonify({"task_id": task_id}), 202
 
-@celery.task(name="motivation_video_task")
-def generate_motivation_video_in_background_celery(task_id, scenes_data):
+@celery.task(name="commercial_video_task")
+def generate_commercial_video_in_background_celery(task_id, scenes_data):
     try:
         output_path = f"final_video_{uuid.uuid4()}.mp4"
         scenes = []
-        logger.debug("Generate_motivation_video_in_background....")
+        logger.debug("Generate_commercial_video_in_background....")
 
         for scene_data in scenes_data:
             prompt_video = scene_data[0]
             text = scene_data[1]
-            scenes.append(create_motivation_scene(prompt_video, "Spanish", text))
+            scenes.append(create_commercial_scene(prompt_video, "Spanish", text))
 
         music = "true"
         create_video_with_scenes(scenes, output_path, music)
@@ -93,8 +104,8 @@ def generate_motivation_video_in_background_celery(task_id, scenes_data):
         logger.error(f"Error in generate_video_in_background: {traceback.format_exc()}")
         set_task_status(task_id, "failed", error=str(e))
 
-def create_motivation_scene(prompt_video, language, text, duration=None):
-    logger.debug("create motivation scene...")
+def create_commercial_scene(prompt_video, language, text, duration=None):
+    logger.debug("create commercial scene...")
     size = (1080, 720)
 
     file_name = generate_audio_scene(text, language)
@@ -125,38 +136,14 @@ def create_motivation_scene(prompt_video, language, text, duration=None):
     video_clip = video_clip.set_duration(duration)
 
     # Set the audio for the image clip
-    #video_clip = video_clip.set_audio(audio_clip)
-
-    # Create word-by-word TextClips
-    words = text.split()
-    phrase_length = 4  # Number of words per phrase (adjust as needed)
-    phrases = [" ".join(words[i:i + phrase_length]) for i in range(0, len(words), phrase_length)]
-    phrase_duration = duration / len(phrases)  # Set duration for each phrase to appear
-
-    # Create TextClips for each phrase and arrange them in sequence
-    phrase_clips = []
-    for i, phrase in enumerate(phrases):
-        try:
-            phrase_clip = TextClip(phrase, fontsize=40, color='white', font='DejaVu-Sans-Bold')
-            phrase_clip = phrase_clip.set_position(('center', 'center')).set_duration(phrase_duration)
-            phrase_clip = phrase_clip.set_start(i * phrase_duration)  # Set when each phrase appears
-            phrase_clips.append(phrase_clip)
-        except Exception as e:
-            logger.debug(f"Failed to create TextClip for phrase '{phrase}'. Error: {str(e)}")
-            raise Exception(f"Failed to create TextClip for phrase '{phrase}'. Error: {str(e)}")
-        
-    # Overlay the phrases on top of the image using CompositeVideoClip
-    video_clip_with_text = CompositeVideoClip([video_clip] + phrase_clips).set_audio(audio_clip)
-
-    # Set the audio for the video clip
-    video_clip_with_text = video_clip_with_text.set_audio(audio_clip)
+    video_clip = video_clip.set_audio(audio_clip)
 
     # Clean up local file after upload
     os.remove(file_name)
     os.remove(local_video_path)
     
-    #return video_clip
-    return video_clip_with_text
+    return video_clip
+    
 
 
 
@@ -199,6 +186,28 @@ def generate_audio_scene(text, language):
         print(f"Error generating audio: {e}")
         return None
 
-
-
-
+@video_commercial.route('/get_webinfo', methods=['GET'])
+def get_webinfo():
+    url = request.args.get('url')
+    
+    if url:
+        try:
+            completion = client.beta.chat.completions.parse(
+            #model="gpt-4o-2024-08-06",
+            model = "gpt-4o-mini",
+            
+            messages=[
+                {"role": "system", "content": PROMPT_SYSTEM_WEBINFO},
+                {"role": "user", "content": PROMPT_URL + url}
+            ],
+            response_format=Webinfo,
+            )
+            response = completion.choices[0].message.parsed
+            response_dict = response.model_dump()
+            return jsonify(response_dict)
+        except Exception as e:
+            print(f"Failed to extract info: {e}")
+            return None
+    else:
+        return jsonify({'error': 'No url provided'}), 400
+    

@@ -1,8 +1,8 @@
 <div class="container">
-    <h1>Story Generator</h1>
+    <h1>Commercial video Generator</h1>
     <!-- Updated input container with a textarea for multiple sentences -->
     <div class="input-container">
-      <textarea id="storyTopic" [(ngModel)]="storyTopic" placeholder="Enter a topic or sentences for your story" 
+      <textarea id="storyTopic" [(ngModel)]="storyTopic" placeholder="Enter the url of your company" 
         rows="3" class="input-field">
       </textarea>
     </div>
@@ -16,7 +16,7 @@
         <option value="German">German</option>
       </select>
     </div>
-    <button (click)="mainFunction()">Generate Story</button>
+    <button (click)="mainFunction()">Generate video</button>
     <!-- Progress bar -->
     <div class="progress-container" *ngIf="isLoading">
       <div class="progress-bar" [style.width.%]="progress"></div>
@@ -35,5 +35,4 @@
     <!-- Display the generated story text if the video is not available -->
     <p *ngIf="generatedStory && !video_url">{{ generatedStory }}</p>
     </div>
-
 
