@@ -1,0 +1,57 @@
+
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: left;
+    font-family: Arial, sans-serif;
+}
+
+/* Styling the container */
+#useCase {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    color: #999;
+    cursor: pointer;
+    appearance: none; /* Remove default styling in some browsers */
+    box-sizing: border-box;
+  }
+  
+  /* Add a hover effect for the combo box */
+  #useCase:hover {
+    border-color: #999; /* Slightly darker green */
+  }
+  
+  /* Add focus styles */
+  #useCase:focus {
+    border-color: #2e7d32; /* Dark green */
+    box-shadow: 0 0 5px rgba(46, 125, 50, 0.75);
+  }
+  
+  /* Styling the label */
+  label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #fdfdfd;
+  }
+  
+  /* Container for the combo box and label */
+  div {
+    margin: 10px 0;
+  }
+  
+  /* Styling for the dynamic component area */
+  .ng-container {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fefefe;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  

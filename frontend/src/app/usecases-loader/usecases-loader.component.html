@@ -1,0 +1,14 @@
+<div class="container">
+    <label for="useCase">Select Use Case:</label>
+    <select id="useCase" (change)="onUseCaseChange($event)">
+      <option *ngFor="let useCase of useCases" [value]="useCase.id">
+        {{ useCase.label }}
+      </option>
+    </select>
+  </div>
+  
+  <div>
+    <ng-container *ngIf="selectedComponent">
+      <ng-container *ngComponentOutlet="selectedComponent"></ng-container>
+    </ng-container>
+  </div>
