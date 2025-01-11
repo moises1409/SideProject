@@ -7,10 +7,10 @@ def make_celery(app_name=__name__):
         broker=os.getenv("CELERY_BROKER_URL"),
         backend=os.getenv("CELERY_RESULT_BACKEND")
     )
-    celery.conf.update(
-        broker_use_ssl={'ssl_cert_reqs': os.getenv('SSL_CERT_REQS', 'CERT_NONE')},
-        result_backend_use_ssl={'ssl_cert_reqs': os.getenv('SSL_CERT_REQS', 'CERT_NONE')}
-    )
+    #celery.conf.update(
+     #   broker_use_ssl={'ssl_cert_reqs': os.getenv('SSL_CERT_REQS', 'CERT_NONE')},
+      #  result_backend_use_ssl={'ssl_cert_reqs': os.getenv('SSL_CERT_REQS', 'CERT_NONE')}
+    #)
     return celery
 
 celery = make_celery()

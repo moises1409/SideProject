@@ -23,6 +23,8 @@ services:
       - "4000:4000"
     depends_on:
       - celery_worker
+      - db
+      - redis
 
   celery_worker:
     container_name: celery_worker
@@ -33,3 +35,29 @@ services:
     env_file:
       - ./backend/.env  # Updated path to .env file
     command: celery -A app.celery worker --loglevel=info
+    depends_on:
+      - redis
+  
+  redis:  # Redis service
+    container_name: redis
+    image: redis:6.2
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+  
+  db:
+    container_name: db
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  
+volumes:
+  pgdata: {}
+  redis_data: {}

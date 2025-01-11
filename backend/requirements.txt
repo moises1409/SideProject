@@ -10,3 +10,6 @@ moviepy==1.0.3
 Pillow==9.5.0
 celery
 redis
+psycopg2-binary
+Flask-SQLAlchemy
+flask-migrate

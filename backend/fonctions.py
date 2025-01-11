@@ -13,16 +13,16 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 logger = get_task_logger(__name__)
 logger.setLevel(logging.DEBUG) 
 
-redis_host = os.getenv("REDIS_HOST", "video-ai.redis.cache.windows.net")
-redis_port = int(os.getenv("REDIS_PORT", 6380))
+redis_host = os.getenv("REDIS_HOST")
+redis_port = int(os.getenv("REDIS_PORT"))
 redis_password = os.getenv("REDIS_PASSWORD")
-redis_ssl = True
+#redis_ssl = True
 
 redis_client = Redis(
     host=redis_host,
     port=redis_port,
     password=redis_password,
-    ssl=redis_ssl
+    #ssl=redis_ssl
 )
 
 CHUNK_SIZE = 1024
